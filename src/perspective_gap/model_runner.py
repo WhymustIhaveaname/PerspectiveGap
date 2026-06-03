@@ -13,6 +13,7 @@ TASKS = {"role_assignment", "prompt_writing"}
 OPENAI_COMPATIBLE_PROVIDERS = {"deepseek", "kimi", "nvidia", "openrouter", "openai-compatible"}
 MAX_OUTPUT_TOKENS = 16000
 API_RETRIES = 8
+TASK_EVALUATION_ID_MARKER = "__task_"
 
 PROVIDER_API_KEY_ENVS = {
     "anthropic": "ANTHROPIC_API_KEY",
@@ -64,7 +65,14 @@ def parse_tasks(text: str) -> list[str]:
     return tasks
 
 
+def parse_scenario_ids(values: list[str] | None) -> list[str]:
+    if not values:
+        return []
+    return [part.strip() for value in values for part in value.split(",") if part.strip()]
+
+
 def scenario_paths(scenarios_dir: Path, scenario_ids: list[str] | None) -> list[Path]:
+    scenario_ids = parse_scenario_ids(scenario_ids)
     if not scenario_ids:
         return iter_scenario_paths(scenarios_dir)
     paths = []
@@ -117,24 +125,68 @@ def retry_sleep(attempt: int) -> None:
 
 
 class OpenAICompatibleChatClient:
-    def __init__(self, model: str, api_key: str, base_url: str, retries: int):
+    def __init__(
+        self,
+        model: str,
+        api_key: str,
+        base_url: str,
+        retries: int,
+        token_limit_parameter: str,
+    ):
         from openai import OpenAI
 
         self.client = OpenAI(api_key=api_key, base_url=base_url)
         self.model = model
         self.retries = retries
+        self.token_limit_parameter = token_limit_parameter
+
+    def _completion_kwargs(self, prompt: str, max_output_tokens: int, token_limit_parameter: str) -> dict:
+        return {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            token_limit_parameter: max_output_tokens,
+        }
+
+    def _alternate_token_limit_parameter(self) -> str:
+        if self.token_limit_parameter == "max_completion_tokens":
+            return "max_tokens"
+        return "max_completion_tokens"
+
+    @staticmethod
+    def _looks_like_unsupported_token_limit_parameter(error: Exception) -> bool:
+        message = str(error).lower()
+        return (
+            ("max_tokens" in message or "max_completion_tokens" in message)
+            and ("unsupported" in message or "not supported" in message or "unrecognized" in message)
+        )
 
     def generate(self, prompt: str, max_output_tokens: int) -> str:
         last_error: Exception | None = None
         for attempt in range(self.retries + 1):
             try:
-                response = self.client.chat.completions.create(
-                    model=self.model,
-                    messages=[{"role": "user", "content": prompt}],
-                )
+                kwargs = self._completion_kwargs(prompt, max_output_tokens, self.token_limit_parameter)
+                response = self.client.chat.completions.create(**kwargs)
                 content = response.choices[0].message.content
                 return content or ""
             except Exception as error:  # noqa: BLE001 - retry API/transient errors and re-raise last.
+                if self._looks_like_unsupported_token_limit_parameter(error):
+                    try:
+                        alternate_parameter = self._alternate_token_limit_parameter()
+                        kwargs = self._completion_kwargs(
+                            prompt,
+                            max_output_tokens,
+                            alternate_parameter,
+                        )
+                        response = self.client.chat.completions.create(**kwargs)
+                        self.token_limit_parameter = alternate_parameter
+                        content = response.choices[0].message.content
+                        return content or ""
+                    except Exception as fallback_error:  # noqa: BLE001 - retry and re-raise last.
+                        last_error = fallback_error
+                        if attempt == self.retries:
+                            break
+                        retry_sleep(attempt)
+                        continue
                 last_error = error
                 if attempt == self.retries:
                     break
@@ -173,25 +225,34 @@ class AnthropicMessagesClient:
         raise RuntimeError(f"Anthropic call failed after {self.retries + 1} attempts: {last_error}")
 
 
-def completed_tasks(path: Path) -> dict[str, set[str]]:
-    completed: dict[str, set[str]] = {}
+def task_evaluation_id(base_evaluation_id: str, task: str) -> str:
+    return f"{base_evaluation_id}{TASK_EVALUATION_ID_MARKER}{task}"
+
+
+def completed_requests(path: Path) -> set[tuple[str, str]]:
+    completed: set[tuple[str, str]] = set()
     if not path.exists():
         return completed
     for row in load_jsonl(path):
-        evaluation_id = row["evaluation_id"]
-        tasks = completed.setdefault(evaluation_id, set())
+        model = row.get("model", "")
+        row_task = row.get("task")
+        if isinstance(row_task, str) and row.get("response") is not None:
+            completed.add((row["evaluation_id"], model))
         if "role_assignment_response" in row:
-            tasks.add("role_assignment")
+            completed.add((task_evaluation_id(row["evaluation_id"], "role_assignment"), model))
         if "prompt_writing_response" in row:
-            tasks.add("prompt_writing")
+            completed.add((task_evaluation_id(row["evaluation_id"], "prompt_writing"), model))
     return completed
 
 
-def base_prediction(evaluation: dict, args: argparse.Namespace) -> dict:
+def base_prediction(evaluation: dict, args: argparse.Namespace, task: str) -> dict:
+    request_evaluation_id = task_evaluation_id(evaluation["evaluation_id"], task)
     return {
-        "evaluation_id": evaluation["evaluation_id"],
+        "evaluation_id": request_evaluation_id,
+        "base_evaluation_id": evaluation["evaluation_id"],
         "scenario_id": evaluation["scenario_id"],
         "shuffle_seed": evaluation["shuffle_seed"],
+        "task": task,
         "model": args.model,
         "provider": args.provider,
     }
@@ -207,6 +268,7 @@ def build_client(args: argparse.Namespace) -> TextClient:
             api_key=api_key,
             base_url=base_url,
             retries=API_RETRIES,
+            token_limit_parameter="max_completion_tokens",
         )
     if args.provider in OPENAI_COMPATIBLE_PROVIDERS:
         base_url = get_base_url(args.provider, args.base_url)
@@ -216,6 +278,7 @@ def build_client(args: argparse.Namespace) -> TextClient:
             api_key=api_key,
             base_url=base_url,
             retries=API_RETRIES,
+            token_limit_parameter="max_tokens",
         )
     if args.provider == "anthropic":
         return AnthropicMessagesClient(model=args.model, api_key=api_key, retries=API_RETRIES)
@@ -230,42 +293,55 @@ def run_predictions(args: argparse.Namespace) -> None:
         args.scenario_id,
         args.shuffle_seed,
     )
-    completed = completed_tasks(args.out)
+    completed = completed_requests(args.out)
+    total_requests = len(evaluations) * len(tasks)
+    needed_request_ids = [
+        task_evaluation_id(evaluation["evaluation_id"], task)
+        for evaluation in evaluations
+        for task in tasks
+    ]
 
     client = build_client(args)
     print(f"provider={args.provider}")
     print(f"model={args.model}")
-    print(f"evaluations={len(evaluations)}")
+    print(f"evaluations={total_requests}")
     print(f"tasks={','.join(tasks)}")
-    print(f"completed_responses={sum(len(done) for done in completed.values())}")
+    print(f"completed_responses={sum((request_id, args.model) in completed for request_id in needed_request_ids)}")
 
-    for index, evaluation in enumerate(evaluations, start=1):
-        evaluation_id = evaluation["evaluation_id"]
-        done = completed.setdefault(evaluation_id, set())
-        if all(task in done for task in tasks):
-            print(f"[{index}/{len(evaluations)}] skip {evaluation_id}", flush=True)
-            continue
-
-        if "role_assignment" in tasks and "role_assignment" not in done:
-            print(f"[{index}/{len(evaluations)}] role_assignment {evaluation_id}", flush=True)
-            prediction = base_prediction(evaluation, args)
-            prediction["role_assignment_response"] = client.generate(
-                evaluation["role_assignment_prompt"],
-                MAX_OUTPUT_TOKENS,
-            )
-            append_jsonl(args.out, prediction)
-            done.add("role_assignment")
-            print(f"[{index}/{len(evaluations)}] wrote role_assignment {evaluation_id}", flush=True)
-        if "prompt_writing" in tasks and "prompt_writing" not in done:
-            print(f"[{index}/{len(evaluations)}] prompt_writing {evaluation_id}", flush=True)
-            prediction = base_prediction(evaluation, args)
-            prediction["prompt_writing_response"] = client.generate(
-                evaluation["prompt_writing_prompt"],
-                MAX_OUTPUT_TOKENS,
-            )
-            append_jsonl(args.out, prediction)
-            done.add("prompt_writing")
-            print(f"[{index}/{len(evaluations)}] wrote prompt_writing {evaluation_id}", flush=True)
+    request_index = 0
+    for evaluation in evaluations:
+        if "role_assignment" in tasks:
+            request_index += 1
+            request_id = task_evaluation_id(evaluation["evaluation_id"], "role_assignment")
+            request_key = (request_id, args.model)
+            if request_key in completed:
+                print(f"[{request_index}/{total_requests}] skip {request_id}", flush=True)
+            else:
+                print(f"[{request_index}/{total_requests}] role_assignment {request_id}", flush=True)
+                prediction = base_prediction(evaluation, args, "role_assignment")
+                prediction["response"] = client.generate(
+                    evaluation["role_assignment_prompt"],
+                    MAX_OUTPUT_TOKENS,
+                )
+                append_jsonl(args.out, prediction)
+                completed.add(request_key)
+                print(f"[{request_index}/{total_requests}] wrote role_assignment {request_id}", flush=True)
+        if "prompt_writing" in tasks:
+            request_index += 1
+            request_id = task_evaluation_id(evaluation["evaluation_id"], "prompt_writing")
+            request_key = (request_id, args.model)
+            if request_key in completed:
+                print(f"[{request_index}/{total_requests}] skip {request_id}", flush=True)
+            else:
+                print(f"[{request_index}/{total_requests}] prompt_writing {request_id}", flush=True)
+                prediction = base_prediction(evaluation, args, "prompt_writing")
+                prediction["response"] = client.generate(
+                    evaluation["prompt_writing_prompt"],
+                    MAX_OUTPUT_TOKENS,
+                )
+                append_jsonl(args.out, prediction)
+                completed.add(request_key)
+                print(f"[{request_index}/{total_requests}] wrote prompt_writing {request_id}", flush=True)
 
 
 def build_parser() -> argparse.ArgumentParser:

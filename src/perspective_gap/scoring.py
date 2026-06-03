@@ -255,20 +255,38 @@ def score_prompt_writing(
 
 
 def score_prediction(evaluation: dict[str, Any], prediction: dict[str, Any]) -> dict[str, Any]:
-    result: dict[str, Any] = {"evaluation_id": evaluation["evaluation_id"]}
-    if "role_assignment_response" in prediction:
+    result: dict[str, Any] = {"evaluation_id": prediction.get("evaluation_id", evaluation["evaluation_id"])}
+    if prediction.get("task"):
+        result["task"] = prediction["task"]
+    if prediction.get("base_evaluation_id"):
+        result["base_evaluation_id"] = prediction["base_evaluation_id"]
+    if prediction.get("task") == "role_assignment":
         result["role_assignment"] = score_role_assignment(
-            prediction["role_assignment_response"],
+            prediction["response"],
             evaluation["reference_need_sets"],
             evaluation.get("distractor_id"),
         )
-    if "prompt_writing_response" in prediction:
+    elif prediction.get("task") == "prompt_writing":
         result["prompt_writing"] = score_prompt_writing(
-            prediction["prompt_writing_response"],
+            prediction["response"],
             evaluation["fragments"],
             evaluation["reference_need_sets"],
             evaluation.get("distractor_id"),
         )
+    else:
+        if "role_assignment_response" in prediction:
+            result["role_assignment"] = score_role_assignment(
+                prediction["role_assignment_response"],
+                evaluation["reference_need_sets"],
+                evaluation.get("distractor_id"),
+            )
+        if "prompt_writing_response" in prediction:
+            result["prompt_writing"] = score_prompt_writing(
+                prediction["prompt_writing_response"],
+                evaluation["fragments"],
+                evaluation["reference_need_sets"],
+                evaluation.get("distractor_id"),
+            )
     return result
 
 
