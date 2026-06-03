@@ -260,15 +260,19 @@ def score_prediction(evaluation: dict[str, Any], prediction: dict[str, Any]) -> 
         result["task"] = prediction["task"]
     if prediction.get("base_evaluation_id"):
         result["base_evaluation_id"] = prediction["base_evaluation_id"]
+    if prediction.get("status"):
+        result["status"] = prediction["status"]
+    if prediction.get("error"):
+        result["error"] = prediction["error"]
     if prediction.get("task") == "role_assignment":
         result["role_assignment"] = score_role_assignment(
-            prediction["response"],
+            prediction.get("response"),
             evaluation["reference_need_sets"],
             evaluation.get("distractor_id"),
         )
     elif prediction.get("task") == "prompt_writing":
         result["prompt_writing"] = score_prompt_writing(
-            prediction["response"],
+            prediction.get("response"),
             evaluation["fragments"],
             evaluation["reference_need_sets"],
             evaluation.get("distractor_id"),

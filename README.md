@@ -25,12 +25,13 @@ uv run python scripts/score_predictions.py --predictions predictions/smoke.jsonl
 `scripts/run_model_predictions.py` renders evaluations from `data/scenarios` and `data/distractors`, calls the model, and writes prediction JSONL.
 Each JSONL row is one model API request for one task. Its `evaluation_id` includes the scenario, seed, and task, for example `pg_006__seed_1__task_role_assignment`.
 Resume uses `(evaluation_id, model)`, so the same output file can contain different model IDs without skipping the wrong model.
+Failed API requests are also written as JSONL rows with `status: "error"`, `response: null`, and an `error` object. These rows are counted as completed for resume and scored as failures.
 
 | Parameter | Default | Meaning |
 |---|---:|---|
 | `--provider` | required | Model provider: `openai`, `anthropic`, `deepseek`, `kimi`, `nvidia`, `openrouter`, or `openai-compatible`. |
 | `--model` | required | Provider model ID. |
-| `--out` | required | Prediction JSONL path. Existing rows are used for resume; completed `(evaluation_id, model)` responses are skipped. |
+| `--out` | required | Prediction JSONL path. Existing rows are used for resume; completed `(evaluation_id, model)` requests are skipped. |
 | `--tasks` | `both` | Which task to run: `role_assignment`, `prompt_writing`, or `both`. |
 | `--shuffle-seed` | `42` | Integer render seed. Can be repeated to run multiple seeds. |
 | `--scenario-id` | all scenarios | Source scenario ID, e.g. `pg_006`. Can be comma-separated (`pg_006,pg_070`) or repeated. |

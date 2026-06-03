@@ -133,3 +133,49 @@ def test_run_predictions_writes_one_row_per_request_and_resumes_by_model(tmp_pat
     run_predictions(args)
     assert fake_client.calls == 4
     assert len(out.read_text().splitlines()) == 4
+
+
+def test_run_predictions_records_failure_rows_and_resumes_them(tmp_path, monkeypatch):
+    class FakeClient:
+        def __init__(self):
+            self.calls = 0
+
+        def generate(self, prompt: str, max_output_tokens: int) -> str:
+            self.calls += 1
+            if self.calls == 1:
+                raise RuntimeError("blocked by provider")
+            return "# coder\n"
+
+    fake_client = FakeClient()
+    monkeypatch.setattr(model_runner, "build_client", lambda args: fake_client)
+
+    out = tmp_path / "predictions.jsonl"
+    args = Namespace(
+        provider="openai",
+        model="m1",
+        out=out,
+        tasks="both",
+        shuffle_seed=[1],
+        scenario_id=["pg_000"],
+        base_url=None,
+        api_key_env=None,
+    )
+    run_predictions(args)
+    rows = [json.loads(line) for line in out.read_text().splitlines()]
+    assert fake_client.calls == 2
+    assert len(rows) == 2
+    assert rows[0]["evaluation_id"] == "pg_000__seed_1__task_role_assignment"
+    assert rows[0]["task"] == "role_assignment"
+    assert rows[0]["status"] == "error"
+    assert rows[0]["response"] is None
+    assert rows[0]["error"]["type"] == "RuntimeError"
+    assert rows[1]["status"] == "ok"
+
+    assert completed_requests(out) == {
+        ("pg_000__seed_1__task_role_assignment", "m1"),
+        ("pg_000__seed_1__task_prompt_writing", "m1"),
+    }
+
+    run_predictions(args)
+    assert fake_client.calls == 2
+    assert len(out.read_text().splitlines()) == 2

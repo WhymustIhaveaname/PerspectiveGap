@@ -1,7 +1,7 @@
 import json
 
 from perspective_gap import scoring
-from perspective_gap.scoring import score_prompt_writing, score_role_assignment, summarize_scores
+from perspective_gap.scoring import score_prediction, score_prompt_writing, score_role_assignment, summarize_scores
 
 
 def test_role_assignment_scores_exact_visible_sets():
@@ -48,6 +48,27 @@ def test_role_assignment_reports_five_metrics():
         "boundary_precision": 2 / 3,
         "distractor_leakage": 1.0,
     }
+
+
+def test_score_prediction_scores_task_failure_row_as_failure():
+    evaluation = {
+        "evaluation_id": "pg_x__seed_1",
+        "reference_need_sets": {"coder": ["f1"]},
+        "fragments": [{"id": "f1", "text": "alpha"}],
+    }
+    prediction = {
+        "evaluation_id": "pg_x__seed_1__task_role_assignment",
+        "base_evaluation_id": "pg_x__seed_1",
+        "task": "role_assignment",
+        "status": "error",
+        "response": None,
+        "error": {"type": "RuntimeError", "message": "blocked"},
+    }
+    result = score_prediction(evaluation, prediction)
+    assert result["status"] == "error"
+    assert result["error"] == {"type": "RuntimeError", "message": "blocked"}
+    assert result["role_assignment"]["pass"] is False
+    assert result["role_assignment"]["counts"] == {"tp": 0, "fp": 0, "fn": 1, "distractor_leak": 0}
 
 
 def test_summarize_scores_reports_paper_metrics():

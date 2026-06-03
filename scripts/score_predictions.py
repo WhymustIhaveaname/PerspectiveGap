@@ -21,8 +21,10 @@ def load_jsonl(path: Path) -> list[dict]:
 def normalize_prediction_rows(rows: list[dict]) -> list[dict]:
     normalized: list[dict] = []
     for row in rows:
-        if row.get("task") in {"role_assignment", "prompt_writing"} and "response" in row:
-            normalized.append(dict(row))
+        if row.get("task") in {"role_assignment", "prompt_writing"} and ("response" in row or "error" in row):
+            converted = dict(row)
+            converted.setdefault("response", None)
+            normalized.append(converted)
             continue
         if "role_assignment_response" in row:
             converted = dict(row)
