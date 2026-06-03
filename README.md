@@ -2,6 +2,9 @@
 
 PerspectiveGap is a benchmark for evaluating LLMs' ability to compose prompts for multi-agent systems.
 
+This repository provides the benchmark data and minimal scripts for rendering, evaluation, and metric computation.
+For readability and ease of inspection, production-oriented features such as Batch API submission are intentionally not included.
+
 ## Quick start
 
 Score the bundled example without any API key.
@@ -25,7 +28,7 @@ uv run python scripts/score_predictions.py --predictions predictions/smoke.jsonl
 `scripts/run_model_predictions.py` renders evaluations from `data/scenarios` and `data/distractors`, calls the model, and writes prediction JSONL.
 Each JSONL row is one model API request for one task. Its `evaluation_id` includes the scenario, seed, and task, for example `pg_006__seed_1__task_role_assignment`.
 Resume uses `(evaluation_id, model)`, so the same output file can contain different model IDs without skipping the wrong model.
-Failed API requests are also written as JSONL rows with `status: "error"`, `response: null`, and an `error` object. These rows are counted as completed for resume and scored as failures.
+Failed API requests are also written as JSONL rows with `status: "error"`, `response: null`, and an `error` object.
 
 | Parameter | Default | Meaning |
 |---|---:|---|
