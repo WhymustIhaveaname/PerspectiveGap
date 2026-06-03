@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from perspective_gap.renderer import render_evaluation, write_jsonl
-from perspective_gap.scoring import score_prediction
+from perspective_gap.scoring import format_metric_summary, score_prediction, summarize_scores
 
 
 def load_jsonl(path: Path) -> list[dict]:
@@ -58,23 +58,11 @@ def main() -> None:
     for prediction in predictions:
         evaluation = resolve_evaluation(prediction)
         results.append(score_prediction(evaluation, prediction))
-    if args.out is None:
-        for result in results:
-            print(json.dumps(result, ensure_ascii=False))
-    else:
-        write_jsonl(results, args.out)
-
-    role_assignment_total = sum("role_assignment" in row for row in results)
-    role_assignment_pass = sum(row.get("role_assignment", {}).get("pass", False) for row in results)
-    prompt_writing_total = sum("prompt_writing" in row for row in results)
-    prompt_writing_pass = sum(row.get("prompt_writing", {}).get("pass", False) for row in results)
-    stream = sys.stderr if args.out is None else sys.stdout
+    summary = summarize_scores(results)
+    print(format_metric_summary(summary))
     if args.out is not None:
-        print(f"wrote {len(results)} score rows to {args.out}", file=stream)
-    if role_assignment_total:
-        print(f"role-fragment assignment: {role_assignment_pass}/{role_assignment_total}", file=stream)
-    if prompt_writing_total:
-        print(f"free-form prompt writing: {prompt_writing_pass}/{prompt_writing_total}", file=stream)
+        write_jsonl(results, args.out)
+        print(f"wrote {len(results)} score rows to {args.out}")
 
 
 if __name__ == "__main__":
