@@ -42,6 +42,10 @@ Paper: [PerspectiveGap: A Benchmark for Multi-Agent Orchestration Prompting](htt
 
 Code and scorers: [WhymustIhaveaname/PerspectiveGap](https://github.com/WhymustIhaveaname/PerspectiveGap)
 
+Interactive leaderboard: [sun1245/PerspectiveGap-Leaderboard](https://huggingface.co/spaces/sun1245/PerspectiveGap-Leaderboard)
+
+Project collection: [PerspectiveGap Benchmark](https://huggingface.co/collections/sun1245/perspectivegap-benchmark-6a29cc320b94890356c60dd7)
+
 This Hugging Face dataset contains the released rendered set: 220 rows from 110 scenarios rendered with seeds 1 and 42. Each row includes the two task prompts, visible fragments, distractor ID, and answer key.
 
 ## Dataset Details
@@ -53,6 +57,8 @@ This Hugging Face dataset contains the released rendered set: 220 rows from 110 
 - License: MIT
 - Repository: <https://github.com/WhymustIhaveaname/PerspectiveGap>
 - Paper: <https://arxiv.org/abs/2606.08878>
+- Leaderboard: <https://huggingface.co/spaces/sun1245/PerspectiveGap-Leaderboard>
+- Project collection: <https://huggingface.co/collections/sun1245/perspectivegap-benchmark-6a29cc320b94890356c60dd7>
 
 The dataset is released as a single `test` split. It is intended for benchmarking prompt composition and context filtering in multi-agent orchestration settings.
 
@@ -140,6 +146,8 @@ The benchmark scenarios were curated to test information routing decisions in mu
 
 - GitHub repository: <https://github.com/WhymustIhaveaname/PerspectiveGap>
 - arXiv paper: <https://arxiv.org/abs/2606.08878>
+- Interactive leaderboard: <https://huggingface.co/spaces/sun1245/PerspectiveGap-Leaderboard>
+- Hugging Face collection: <https://huggingface.co/collections/sun1245/perspectivegap-benchmark-6a29cc320b94890356c60dd7>
 
 ## Citation
 

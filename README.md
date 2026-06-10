@@ -5,6 +5,13 @@ PerspectiveGap is a benchmark for evaluating LLMs' ability to compose prompts fo
 This repository provides the benchmark data and minimal scripts for rendering, evaluation, and metric computation.
 For readability and ease of inspection, production-oriented features such as Batch API submission are intentionally not included.
 
+## Links
+
+- Paper: <https://arxiv.org/abs/2606.08878>
+- Hugging Face dataset: <https://huggingface.co/datasets/sun1245/PerspectiveGap>
+- Interactive leaderboard: <https://huggingface.co/spaces/sun1245/PerspectiveGap-Leaderboard>
+- Hugging Face collection: <https://huggingface.co/collections/sun1245/perspectivegap-benchmark-6a29cc320b94890356c60dd7>
+
 ## Setup
 
 PerspectiveGap uses Python 3.13+ and [uv](https://docs.astral.sh/uv/) for dependency management.
