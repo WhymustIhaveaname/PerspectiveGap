@@ -5,6 +5,28 @@ PerspectiveGap is a benchmark for evaluating LLMs' ability to compose prompts fo
 This repository provides the benchmark data and minimal scripts for rendering, evaluation, and metric computation.
 For readability and ease of inspection, production-oriented features such as Batch API submission are intentionally not included.
 
+## Setup
+
+PerspectiveGap uses Python 3.13+ and [uv](https://docs.astral.sh/uv/) for dependency management.
+
+```bash
+git clone https://github.com/WhymustIhaveaname/PerspectiveGap.git
+cd PerspectiveGap
+uv sync
+```
+
+Most local inspection and scoring commands below do not require any model API key.
+Model-calling commands require the corresponding provider environment variable:
+
+| Provider | Environment variable |
+|---|---|
+| `openai` | `OPENAI_API_KEY` |
+| `anthropic` | `ANTHROPIC_API_KEY` |
+| `deepseek` | `DEEPSEEK_API_KEY` |
+| `kimi` | `KIMI_API_KEY` |
+| `nvidia` | `NVIDIA_API_KEY` |
+| `openrouter` | `OPENROUTER_API_KEY` |
+
 ## Quick start
 
 Score the bundled example without any API key.
@@ -13,12 +35,19 @@ Score the bundled example without any API key.
 uv run python scripts/score_predictions.py --predictions tests/fixtures/example_predictions.jsonl
 ```
 
-Set your provider API key, then run one rendered evaluation and score it.
+Render the Hugging Face release JSONL locally without any API key.
+
+```bash
+uv run python scripts/build_hf_evaluations.py --out /tmp/perspectivegap-evaluations.jsonl
+```
+
+Set your provider API key, then run one minimal model-calling smoke test and score it.
+This example sends one API request by restricting the task to `role_assignment`; omit `--tasks role_assignment` to run both released tasks.
 
 ```bash
 uv run python scripts/run_model_predictions.py \
-  --provider openai --model gpt-5.5 \
-  --scenario-id pg_006 --shuffle-seed 1 \
+  --provider openai --model <MODEL_YOU_HAVE_ACCESS_TO> \
+  --scenario-id pg_006 --shuffle-seed 1 --tasks role_assignment \
   --out predictions/smoke.jsonl
 uv run python scripts/score_predictions.py --predictions predictions/smoke.jsonl
 ```
