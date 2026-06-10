@@ -11,6 +11,7 @@ For readability and ease of inspection, production-oriented features such as Bat
 - Hugging Face dataset: <https://huggingface.co/datasets/sun1245/PerspectiveGap>
 - Interactive leaderboard: <https://huggingface.co/spaces/sun1245/PerspectiveGap-Leaderboard>
 - Hugging Face collection: <https://huggingface.co/collections/sun1245/perspectivegap-benchmark-6a29cc320b94890356c60dd7>
+- Submit community results: [SUBMIT_RESULTS.md](SUBMIT_RESULTS.md)
 
 ## Setup
 

@@ -1,0 +1,155 @@
+name: Submit PerspectiveGap result
+description: Submit a model run for PerspectiveGap leaderboard consideration.
+title: "[Result] api-model-id"
+labels: ["result-submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for submitting PerspectiveGap results. Please read `SUBMIT_RESULTS.md` before filing.
+
+        Official leaderboard submissions should cover all 110 scenarios, seeds 1 and 42, and both tasks, for 440 model-request rows.
+
+  - type: input
+    id: model_id
+    attributes:
+      label: Exact API model ID
+      description: Use the exact API model ID passed to `--model`. Do not prefix the provider unless the endpoint itself requires it, such as OpenRouter IDs.
+      placeholder: gpt-5.5 / claude-opus-4-7 / qwen/qwen3.7-max
+    validations:
+      required: true
+
+  - type: input
+    id: model_snapshot
+    attributes:
+      label: Model snapshot / version, if available
+      description: Include a dated alias, model revision, provider snapshot ID, or note that only a moving alias was available.
+      placeholder: dated snapshot / provider version / moving alias
+
+  - type: input
+    id: provider
+    attributes:
+      label: Provider / route
+      description: Direct provider or route used for inference.
+      placeholder: openai, anthropic, openrouter, nvidia, deepseek, kimi, openai-compatible, etc.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: submission_type
+    attributes:
+      label: Submission type
+      options:
+        - Full official run (110 scenarios × 2 seeds × 2 tasks)
+        - Partial run / smoke test
+        - Correction or rerun of an existing result
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: run_date
+    attributes:
+      label: Run date
+      description: ISO date or datetime.
+      placeholder: "2026-06-10"
+    validations:
+      required: true
+
+  - type: input
+    id: repo_revision
+    attributes:
+      label: PerspectiveGap Git commit SHA
+      description: Commit used for rendering/scoring.
+      placeholder: git rev-parse HEAD
+    validations:
+      required: true
+
+  - type: input
+    id: dataset_revision
+    attributes:
+      label: Hugging Face dataset revision, if used
+      description: Optional. Include the `sun1245/PerspectiveGap` revision hash if you loaded data from HF.
+      placeholder: hf dataset revision / commit SHA
+
+  - type: textarea
+    id: commands
+    attributes:
+      label: Commands used
+      description: Paste the exact commands used to run and score the benchmark. Do not include API keys.
+      render: shell
+      placeholder: |
+        uv run python scripts/run_model_predictions.py ...
+        uv run python scripts/score_predictions.py ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: artifacts
+    attributes:
+      label: Artifact links or attachments
+      description: Link or attach raw predictions JSONL, score JSONL, score summary text, and any immutable revision or checksum.
+      placeholder: |
+        Raw predictions JSONL: https://...
+        Score JSONL: https://...
+        Score summary: https://...
+        Immutable revision / checksum: https://... or sha256:...
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary_metrics
+    attributes:
+      label: Score summary
+      description: Paste the scorer's printed summary. Include combined pass rate if computed.
+      render: text
+      placeholder: |
+        role-fragment assignment (220 evaluations)
+          strict_pass: ...
+        free-form prompt writing (220 evaluations)
+          strict_pass: ...
+        combined: ... / 440 (...%)
+    validations:
+      required: true
+
+  - type: textarea
+    id: validation_output
+    attributes:
+      label: Validation output
+      description: Paste the quick validation output from SUBMIT_RESULTS.md, including row counts, unique keys, task counts, status distribution, model IDs, scenario count, and seeds.
+      render: text
+      placeholder: |
+        prediction rows: 440
+        score rows: 440
+        unique prediction keys: 440
+        unique score keys: 440
+        tasks: Counter({'role_assignment': 220, 'prompt_writing': 220})
+        status: Counter({'ok': 440})
+        models: ['api-model-id']
+        scenario count: 110
+        seeds: [1, 42]
+    validations:
+      required: true
+
+  - type: textarea
+    id: decoding
+    attributes:
+      label: Decoding / wrapper details
+      description: Note any non-default decoding parameters, system prompts, wrappers, retries, post-processing, or endpoint-specific behavior.
+      placeholder: "No extra system prompt; default provider decoding; no post-processing beyond recording raw response."
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I did not include API keys, private credentials, billing data, or other secrets in the artifacts.
+          required: true
+        - label: The raw prediction artifact preserves failed request rows instead of silently dropping them.
+          required: true
+        - label: I reviewed error messages and redacted sensitive account, billing, endpoint, or credential details if present, noting any redaction above.
+          required: true
+        - label: I understand maintainers may rerun the scorer and may mark partial or modified-protocol runs as non-official.
+          required: true
