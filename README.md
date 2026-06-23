@@ -11,6 +11,7 @@ For readability and ease of inspection, production-oriented features such as Bat
 - Hugging Face dataset: <https://huggingface.co/datasets/sun1245/PerspectiveGap>
 - Interactive leaderboard: <https://huggingface.co/spaces/sun1245/PerspectiveGap-Leaderboard>
 - Hugging Face collection: <https://huggingface.co/collections/sun1245/perspectivegap-benchmark-6a29cc320b94890356c60dd7>
+- Inspect AI integration: <https://github.com/WhymustIhaveaname/PerspectiveGap-inspect>
 - Submit community results: [SUBMIT_RESULTS.md](SUBMIT_RESULTS.md)
 
 ## Setup
@@ -23,7 +24,10 @@ cd PerspectiveGap
 uv sync
 ```
 
-Most local inspection and scoring commands below do not require any model API key.
+Scoring and rendering require only the core dependencies (`pyyaml`, `tokenizers`).
+Model-calling commands additionally need API client libraries, which `uv sync` installs automatically via the dev dependency group.
+If you install PerspectiveGap as a library with `pip install perspective-gap`, add the `runner` extra for model-calling support: `pip install perspective-gap[runner]`.
+
 Model-calling commands require the corresponding provider environment variable:
 
 | Provider | Environment variable |
