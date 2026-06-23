@@ -3,7 +3,7 @@ name = "perspective-gap"
 version = "0.1.0"
 description = "PerspectiveGap benchmark rendering and scoring utilities"
 license = "MIT"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "pyyaml>=6.0.3",
     "tokenizers>=0.23.1",
