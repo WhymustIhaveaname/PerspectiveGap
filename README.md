@@ -14,6 +14,17 @@ For readability and ease of inspection, production-oriented features such as Bat
 - Inspect AI integration: <https://github.com/WhymustIhaveaname/PerspectiveGap-inspect>
 - Submit community results: [SUBMIT_RESULTS.md](SUBMIT_RESULTS.md)
 
+## Third-party integrations
+
+PerspectiveGap has been merged into the following evaluation frameworks.
+
+| Framework | Task | Pull request | Merged | Merge commit |
+|---|---|---|---|---|
+| OpenCompass | Role assignment and prompt writing | [#2484](https://github.com/open-compass/opencompass/pull/2484) | 2026-06-25 | [`679bf8f`](https://github.com/open-compass/opencompass/commit/679bf8f6635c4518f23148e5930b474480369a1b) |
+| Inspect Evals | Role-fragment assignment | [#1827](https://github.com/UKGovernmentBEIS/inspect_evals/pull/1827) | 2026-06-25 | [`aead5f8`](https://github.com/UKGovernmentBEIS/inspect_evals/commit/aead5f82b542cccddde872148eb3265eabca2ec9) |
+| Inspect Evals | Free-form prompt writing | [#1829](https://github.com/UKGovernmentBEIS/inspect_evals/pull/1829) | 2026-06-26 | [`91029e8`](https://github.com/UKGovernmentBEIS/inspect_evals/commit/91029e84313bc1a60c41620abbb9d57ee8373fde) |
+| EvalScope | Role assignment and prompt writing | [#1461](https://github.com/modelscope/evalscope/pull/1461) | 2026-07-08 | [`510bf1c`](https://github.com/modelscope/evalscope/commit/510bf1c8955efea5aec84be509d477a710293437) |
+
 ## Setup
 
 PerspectiveGap uses Python 3.13+ and [uv](https://docs.astral.sh/uv/) for dependency management.
