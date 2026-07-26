@@ -59,6 +59,9 @@ The reported study evaluates 33 commercial models from 10 companies on 110 scena
 | DeepSeek V4 Pro | 37.3% | 26.8% | 32.0% |
 | Claude Fable 5 | 38.6% | 24.1% | 31.4% |
 | Claude Sonnet 5 | 35.0% | 16.4% | 25.7% |
+| Google Gemini 3.1 Pro | 20.0% | 23.6% | 21.8% |
+| Z.ai GLM-5 | 25.9% | 14.5% | 20.2% |
+| Xiaomi MiMo V2.5 Pro | 25.0% | 15.0% | 20.0% |
 | Claude Opus 4.8 | 17.7% | 10.0% | 13.9% |
 | All-model mean | | | **17.2%** |
 
