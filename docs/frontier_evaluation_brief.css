@@ -1,0 +1,304 @@
+@page {
+  size: A4;
+  margin: 10mm 14mm 11mm;
+}
+
+:root {
+  --ink: #172331;
+  --muted: #596776;
+  --navy: #17324d;
+  --blue: #23648d;
+  --teal: #0f7b78;
+  --teal-dark: #0a5c5a;
+  --line: #d5dee5;
+  --soft-blue: #eef5fa;
+  --soft-teal: #edf8f6;
+  --soft-gray: #f5f7f8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 8.65pt;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+body {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  color: var(--ink);
+  background: #fff;
+  font-family: "Noto Sans", "DejaVu Sans", Arial, sans-serif;
+  font-weight: 400;
+  line-height: 1.29;
+}
+
+h1 {
+  margin: 0;
+  padding-top: 4pt;
+  color: var(--navy);
+  border-top: 3pt solid var(--teal);
+  font-size: 23.5pt;
+  font-weight: 750;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+h1::before {
+  display: block;
+  margin-bottom: 2.5pt;
+  color: var(--teal-dark);
+  content: "FRONTIER EVALUATION BRIEF";
+  font-size: 7.1pt;
+  font-weight: 750;
+  letter-spacing: 0.16em;
+  line-height: 1.15;
+}
+
+.subtitle {
+  margin: 2pt 0 5pt;
+  color: var(--muted);
+  font-size: 13.4pt;
+  font-weight: 550;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  margin: 6pt 0 3pt;
+  padding-bottom: 1.8pt;
+  color: var(--navy);
+  border-bottom: 1.1pt solid #bdd0dd;
+  break-after: avoid-page;
+  font-size: 12.6pt;
+  font-weight: 720;
+  letter-spacing: -0.018em;
+  line-height: 1.12;
+}
+
+p {
+  margin: 0 0 3.5pt;
+  orphans: 3;
+  widows: 3;
+}
+
+strong {
+  font-weight: 720;
+}
+
+a {
+  color: var(--blue);
+  text-decoration: none;
+}
+
+.tagline {
+  margin: 0 0 5pt;
+  padding: 5pt 8pt 5pt 9pt;
+  color: #123f51;
+  border-left: 3pt solid var(--teal);
+  border-radius: 0 4pt 4pt 0;
+  background: var(--soft-teal);
+  font-size: 10.2pt;
+  font-weight: 650;
+  line-height: 1.22;
+}
+
+.hero-intro {
+  margin-bottom: 3pt;
+  color: #273746;
+  font-size: 8.9pt;
+  line-height: 1.3;
+}
+
+.figure-wrap {
+  margin: 2pt auto 2pt;
+  text-align: center;
+  break-inside: avoid;
+}
+
+.figure-wrap img {
+  display: block;
+  width: 85%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.figure-caption {
+  margin: 1.5pt 0 2.5pt;
+  color: var(--muted);
+  font-size: 6.9pt;
+  line-height: 1.15;
+  text-align: center;
+}
+
+table {
+  width: 100%;
+  margin: 3pt 0 4pt;
+  overflow: visible;
+  border: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  break-inside: avoid;
+  font-size: 7.6pt;
+  line-height: 1.17;
+}
+
+thead {
+  display: table-header-group;
+}
+
+tr {
+  break-inside: avoid;
+}
+
+th,
+td {
+  padding: 2.25pt 3.7pt;
+  border: 0;
+  border-right: 0.55pt solid var(--line);
+  border-bottom: 0.55pt solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+th:first-child,
+td:first-child {
+  border-left: 0.55pt solid var(--line);
+}
+
+th {
+  color: var(--navy);
+  border-top: 0.55pt solid var(--line);
+  background: #eaf0f4;
+  font-weight: 720;
+}
+
+th:first-child {
+  border-top-left-radius: 3.5pt;
+}
+
+th:last-child {
+  border-top-right-radius: 3.5pt;
+}
+
+tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 3.5pt;
+}
+
+tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 3.5pt;
+}
+
+tbody tr:nth-child(even) td {
+  background: #fafbfc;
+}
+
+/* Capability comparison */
+table:nth-of-type(1) th:last-child,
+table:nth-of-type(1) td:last-child {
+  background: var(--soft-teal);
+}
+
+table:nth-of-type(1) th:last-child {
+  color: var(--teal-dark);
+}
+
+/* Model performance table */
+table:nth-of-type(3) th {
+  color: #fff;
+  border-color: #294b66;
+  background: var(--navy);
+}
+
+table:nth-of-type(3) td:not(:first-child),
+table:nth-of-type(3) th:not(:first-child) {
+  text-align: right;
+}
+
+table:nth-of-type(3) td:last-child {
+  background: #eff7f7;
+  font-weight: 680;
+}
+
+table:nth-of-type(3) tbody tr:last-child td {
+  color: var(--navy);
+  border-top: 1pt solid #91a9b9;
+  background: #eaf0f4;
+  font-weight: 720;
+}
+
+/* Adoption table */
+table:nth-of-type(4) td:first-child {
+  font-weight: 650;
+}
+
+table:nth-of-type(4) td:last-child {
+  color: #355a45;
+  font-variant-numeric: tabular-nums;
+}
+
+ul,
+ol {
+  margin: 1.5pt 0 3.5pt;
+  padding-left: 16pt;
+}
+
+li {
+  margin: 0 0 0.7pt;
+}
+
+.page-break {
+  height: 0;
+  break-before: page;
+  page-break-before: always;
+}
+
+.closing-question {
+  margin: 5pt 0 4pt;
+  padding: 5.5pt 8pt;
+  color: var(--navy);
+  border: 0.8pt solid #bdd0dd;
+  border-left: 3pt solid var(--blue);
+  border-radius: 4pt;
+  background: var(--soft-blue);
+  font-size: 8.9pt;
+  font-weight: 650;
+  line-height: 1.24;
+}
+
+.resource-footer {
+  margin-top: 4.5pt;
+  padding: 4.5pt 7pt;
+  color: #3f4d59;
+  border-top: 1pt solid #9fb6c5;
+  border-radius: 0 0 4pt 4pt;
+  background: var(--soft-gray);
+  font-size: 7.2pt;
+  line-height: 1.3;
+}
+
+.resource-footer .label {
+  color: var(--navy);
+  font-weight: 720;
+}
+
+.resource-footer .meta {
+  color: var(--muted);
+}
+
+.running-footer {
+  display: none;
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  a {
+    color: var(--blue);
+  }
+}
